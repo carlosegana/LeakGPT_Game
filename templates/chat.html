@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LeakGPT – The Insider Threat CTF Arena</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        body { 
+            background: url('/static/MQMw.gif') no-repeat center center fixed; 
+            background-size: cover; 
+            font-family: 'Fira Mono', 'Consolas', 'Menlo', monospace; 
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+        }
+        .container { 
+            max-width: 95vw; 
+            margin: 20px auto; 
+            background: rgba(35, 39, 46, 0.99); 
+            padding: 24px; 
+            border-radius: 8px; 
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.95); 
+            border: 1px solid #2c313c; 
+            backdrop-filter: blur(20px);
+        }
+        h1 { text-align: center; color: #61dafb; font-weight: bold; letter-spacing: 1px; }
+        .chat-box { 
+            height: 550px; 
+            border: 2px solid #2c313c; 
+            margin-bottom: 20px; 
+            background: linear-gradient(135deg, #181a20 0%, #1e2028 100%); 
+            border-radius: 12px;
+            box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        .messages-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+            padding-bottom: 16px;
+            scroll-behavior: smooth;
+        }
+        .messages-container::-webkit-scrollbar {
+            width: 8px;
+        }
+        .messages-container::-webkit-scrollbar-track {
+            background: #181a20;
+            border-radius: 4px;
+        }
+        .messages-container::-webkit-scrollbar-thumb {
+            background: #61dafb;
+            border-radius: 4px;
+        }
+        .messages-container::-webkit-scrollbar-thumb:hover {
+            background: #4fa8c5;
+        }
+        .chat-input-form {
+            padding: 15px 20px;
+            border-top: 1px solid #2c313c;
+            background: rgba(24, 26, 32, 0.8);
+        }
+        .message { 
+            margin-bottom: 20px; 
+            padding: 16px 24px; 
+            border-radius: 12px; 
+            font-size: 0.96em; 
+            display: block; 
+            white-space: pre-wrap; 
+            word-wrap: break-word; 
+            font-family: 'Fira Code', 'Courier New', monospace; 
+            line-height: 1.5; 
+            text-align: left;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.4);
+            max-width: 90%;
+            position: relative;
+        }
+        .message.flag-success { 
+            text-align: center; 
+            background: linear-gradient(135deg, #1a1d23 0%, #2d3748 100%) !important;
+            border: 3px solid #48bb78;
+            box-shadow: 0 6px 24px rgba(72, 187, 120, 0.4);
+            margin: 24px auto;
+            max-width: 95%;
+            border-radius: 16px;
+            padding: 20px 28px;
+            position: relative;
+            animation: successPulse 2s ease-in-out;
+        }
+        @keyframes successPulse {
+            0% { transform: scale(0.95); opacity: 0.8; }
+            50% { transform: scale(1.02); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .message.user { 
+            background: linear-gradient(135deg, #2a2d35 0%, #3e4451 100%); 
+            color: #98c379; 
+            border-left: 4px solid #61dafb;
+            margin-left: 20px;
+            border-radius: 12px 12px 4px 12px;
+        }
+        .message.user::before {
+            content: '👤 USER';
+            position: absolute;
+            left: -20px;
+            top: -8px;
+            font-size: 0.8em;
+            color: #61dafb;
+            font-weight: bold;
+            background: #23272e;
+            padding: 2px 8px;
+            border-radius: 4px;
+            border: 1px solid #61dafb;
+        }
+        .message.bot { 
+            background: linear-gradient(135deg, #1e2124 0%, #36393f 100%); 
+            color: #f39c12; 
+            border-left: 4px solid #e74c3c;
+            margin-right: 20px;
+            border-radius: 12px 12px 12px 4px;
+        }
+        .message.bot::before {
+            content: '🤖 LEAKGPT';
+            position: absolute;
+            left: -20px;
+            top: -8px;
+            font-size: 0.8em;
+            color: #e74c3c;
+            font-weight: bold;
+            background: #23272e;
+            padding: 2px 8px;
+            border-radius: 4px;
+            border: 1px solid #e74c3c;
+        }
+        form { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            gap: 12px;
+            margin-top: 20px;
+        }
+        input[type="text"] { 
+            padding: 12px 16px; 
+            border: 2px solid #2c313c; 
+            border-radius: 6px; 
+            background: rgba(40, 44, 52, 0.9); 
+            color: #ffffff; 
+            font-size: 1em; 
+            font-family: 'Fira Code', monospace; 
+            width: 70%; 
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+        input[type="text"]:focus { 
+            outline: none; 
+            border-color: #61dafb; 
+            box-shadow: 0 4px 16px rgba(97, 218, 251, 0.3);
+            transform: translateY(-2px);
+        }
+        input[type="submit"] { 
+            padding: 12px 24px; 
+            background: linear-gradient(135deg, #61dafb 0%, #21759b 100%); 
+            color: white; 
+            border: none; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            font-size: 1em; 
+            font-weight: bold; 
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(97, 218, 251, 0.4);
+        }
+        input[type="submit"]:hover { 
+            background: linear-gradient(135deg, #21759b 0%, #1e6091 100%); 
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(97, 218, 251, 0.6);
+        }
+        button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 8px rgba(97, 218, 251, 0.3);
+        }
+        #timer { z-index: 2; }
+        ::selection { background: #61dafb33; }
+        @media (max-width: 800px) { .container { max-width: 98vw; } }
+        @media (min-width: 801px) { .container { max-width: 95vw; } }
+        
+        /* Estilos para la ventana de objetivo del reto */
+        .challenge-objective {
+            background: rgba(24, 26, 32, 0.95);
+            border: 2px solid #61dafb;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 16px rgba(97, 218, 251, 0.2);
+            backdrop-filter: blur(10px);
+        }
+        .challenge-objective h3 {
+            color: #61dafb;
+            margin: 0 0 12px 0;
+            font-size: 1.2em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .challenge-objective .objective-content {
+            color: #fff;
+            font-size: 1.05em;
+            line-height: 1.5;
+        }
+        .challenge-objective .target-variable {
+            background: rgba(97, 218, 251, 0.1);
+            border: 1px solid #61dafb;
+            border-radius: 6px;
+            padding: 8px 12px;
+            margin: 8px 0;
+            font-family: 'Fira Mono', monospace;
+            color: #61dafb;
+            font-weight: bold;
+        }
+        .challenge-objective .flag-info {
+            background: rgba(255, 215, 0, 0.1);
+            border: 1px solid #ffd700;
+            border-radius: 6px;
+            padding: 8px 12px;
+            margin: 8px 0;
+            color: #ffd700;
+            font-family: 'Fira Mono', monospace;
+        }
+        .challenge-objective .hint-info {
+            background: rgba(255, 152, 0, 0.1);
+            border: 1px solid #ff9800;
+            border-radius: 6px;
+            padding: 8px 12px;
+            margin: 8px 0;
+            color: #ff9800;
+            font-style: italic;
+        }
+        
+        .dot-typing {
+            display: inline-block;
+            width: 40px;
+            height: 16px;
+            position: relative;
+        }
+        .dot-typing::before, .dot-typing::after, .dot-typing span {
+            content: '';
+            display: inline-block;
+            position: absolute;
+            top: 0;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #61dafb;
+            opacity: 0.7;
+            animation: blink 1.4s infinite both;
+        }
+        .dot-typing::before {
+            left: 0;
+            animation-delay: 0s;
+        }
+        .dot-typing span {
+            left: 16px;
+            animation-delay: 0.2s;
+        }
+        .dot-typing::after {
+            left: 32px;
+            animation-delay: 0.4s;
+        }
+        @keyframes blink {
+            0%, 80%, 100% { opacity: 0.7; }
+            40% { opacity: 0.2; }
+        }
+        /* Fondo animado tipo data leak */
+        #data-leak-bg {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+        .data-leak-line {
+            position: absolute;
+            left: 0;
+            width: 100vw;
+            color: #61dafb55;
+            font-family: 'Fira Mono', 'Consolas', monospace;
+            font-size: 1.2em;
+            white-space: nowrap;
+            user-select: none;
+            animation: leak-move 3.2s linear infinite;
+            pointer-events: none;
+            z-index: 1;
+            mix-blend-mode: lighten;
+            opacity: 0.95;
+        }
+        @keyframes leak-move {
+            0% { top: -30px; opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { top: 100vh; opacity: 0; }
+        }
+        /* Avatar insider animado */
+        #insider-avatar svg {
+            animation: avatar-blink 3s infinite;
+        }
+        @keyframes avatar-blink {
+            0%, 90%, 100% { filter: brightness(1); }
+            95% { filter: brightness(0.7); }
+        }
+        /* Icono de alerta animado */
+        #alert-icon svg { animation: alert-pulse 1.2s infinite; }
+        @keyframes alert-pulse {
+            0%, 100% { filter: drop-shadow(0 0 0 #ff9800); }
+            50% { filter: drop-shadow(0 0 8px #ff9800); }
+        }
+        /* Banner de felicitaciones eliminado */
+        #congrats-message {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            pointer-events: none;
+        }
+        .congrats-anim {
+            background: rgba(34, 197, 94, 0.97);
+            color: #fff;
+            font-size: 2.2em;
+            font-family: 'Fira Mono', 'Consolas', monospace;
+            padding: 40px 60px;
+            border-radius: 18px;
+            box-shadow: 0 4px 32px #0008;
+            border: 3px solid #61dafb;
+            text-align: center;
+            animation: pop-congrats 1.2s cubic-bezier(.68,-0.55,.27,1.55) 1;
+        }
+        @keyframes pop-congrats {
+            0% { transform: scale(0.7); opacity: 0; }
+            60% { transform: scale(1.15); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        #hint-toast.show {
+            opacity: 1 !important;
+            transform: translateY(0) !important;
+            animation: shake-toast 0.5s cubic-bezier(.36,.07,.19,.97) both;
+        }
+        @keyframes shake-toast {
+            10%, 90% { transform: translateY(0) translateX(-2px); }
+            20%, 80% { transform: translateY(0) translateX(4px); }
+            30%, 50%, 70% { transform: translateY(0) translateX(-8px); }
+            40%, 60% { transform: translateY(0) translateX(8px); }
+            100% { transform: translateY(0); }
+        }
+        .gpt-layout {
+            display: flex;
+            flex-direction: row;
+            height: 100vh;
+            min-height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+        }
+        .sidebar-panel {
+            width: 320px;
+            min-width: 220px;
+            max-width: 340px;
+            background: rgba(24, 26, 32, 0.99);
+            border-right: 2px solid #23272f;
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            z-index: 10;
+            box-shadow: 2px 0 16px rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(20px);
+        }
+        .sidebar-content {
+            padding: 36px 24px 24px 24px;
+            color: #fff;
+            font-family: 'Fira Mono','Consolas',monospace;
+            font-size: 1.05em;
+            line-height: 1.6;
+        }
+        .sidebar-content h3 {
+            color: #61dafb;
+            margin-top: 0;
+            text-align: left;
+            font-size: 1.2em;
+        }
+        .sidebar-content ul {
+            padding-left: 18px;
+        }
+        .main-chat-panel {
+            flex: 1 1 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            justify-content: flex-start;
+            min-width: 0;
+            background: transparent;
+            position: relative;
+        }
+        .container-chat {
+            width: 100%;
+            max-width: 820px;
+            margin: 0 auto;
+            padding: 36px 0 0 0;
+            min-height: 100vh;
+        }
+        @media (max-width: 900px) {
+            .gpt-layout {
+                flex-direction: column;
+            }
+            .sidebar-panel {
+                width: 100vw;
+                min-width: 0;
+                max-width: none;
+                border-right: none;
+                border-bottom: 2px solid #23272f;
+                box-shadow: 0 2px 16px #0002;
+            }
+            .main-chat-panel {
+                min-width: 0;
+            }
+            .container-chat {
+                padding: 24px 0 0 0;
+            }
+        }
+        .mute-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(35, 39, 46, 0.9);
+            color: #61dafb;
+            border: 2px solid #61dafb;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 1.5em;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        .mute-button:hover {
+            background: #61dafb;
+            color: #23272e;
+            transform: scale(1.1);
+        }
+        .mute-button.muted {
+            background: #ff5555;
+            border-color: #ff5555;
+            color: #fff;
+        }
+        .mute-button.muted:hover {
+            background: #ff3333;
+            border-color: #ff3333;
+        }
+    </style>
+</head>
+<body>
+    <!-- Hidden Audio Element -->
+            <audio id="bg-music" src="/static/jungle-waves-drumampbass-electronic-inspiring-promo-345013.mp3" loop preload="auto"></audio>
+    
+    <!-- Mute Button -->
+    <button id="mute-button" class="mute-button" title="Toggle Music">
+        🔊
+    </button>
+    
+    <!-- Fondo animado tipo data leak -->
+    <div id="data-leak-bg"></div>
+    <div id="sound-modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(30,32,40,0.96); z-index:5000; align-items:center; justify-content:center;">
+        <div style="background:#23272e; border:2px solid #61dafb; border-radius:16px; padding:38px 44px; box-shadow:0 4px 32px #000a; text-align:center; max-width:90vw;">
+            <h2 style="color:#61dafb; margin-bottom:18px;">Enable Sound?</h2>
+            <p style="color:#fff; font-size:1.1em; margin-bottom:28px;">Would you like to activate background music for a more immersive experience?</p>
+            <button id="sound-yes" style="background:#22c55e; color:#fff; border:none; border-radius:8px; padding:12px 32px; font-size:1.1em; font-family:inherit; font-weight:bold; cursor:pointer; margin-right:18px;">Yes</button>
+            <button id="sound-no" style="background:#ff5555; color:#fff; border:none; border-radius:8px; padding:12px 32px; font-size:1.1em; font-family:inherit; font-weight:bold; cursor:pointer;">No</button>
+        </div>
+    </div>
+    <div class="gpt-layout">
+        <aside class="sidebar-panel">
+            <div class="sidebar-content">
+                <h3>Instructions</h3>
+                <ul>
+                    <li>Extract the flag from LeakGPT at each level.</li>
+                    <li>Use creative prompts or command injection.</li>
+                    <li>Levels have increasing difficulty and score.</li>
+                    <li>Reset and change level anytime.</li>
+                    <li>All activity is local and for learning only.</li>
+                </ul>
+                <div style="margin-top:32px; display:flex; flex-direction:column; gap:12px;">
+                    <form action="/try_again" method="get">
+                        <button type="submit" style="background:#61dafb; color:#23272e; border:none; border-radius:6px; padding:10px 22px; font-size:1em; font-family:inherit; font-weight:bold; cursor:pointer; box-shadow:0 2px 8px #0004; transition:background 0.2s; width:100%;">Try Again</button>
+                    </form>
+                    <form action="/back_to_menu" method="get">
+                        <button type="submit" style="background:#ff5555; color:#fff; border:none; border-radius:6px; padding:10px 22px; font-size:1em; font-family:inherit; font-weight:bold; cursor:pointer; box-shadow:0 2px 8px #0004; transition:background 0.2s; width:100%;">Back to Menu</button>
+                    </form>
+                </div>
+            </div>
+        </aside>
+        <main class="main-chat-panel">
+            <div class="container-chat">
+                <div style="display:flex; align-items:center; justify-content:center;">
+                    <!-- Avatar insider animado -->
+                    <div id="insider-avatar" style="margin-right:12px;">
+                        <svg width="38" height="38" viewBox="0 0 38 38">
+                            <circle cx="19" cy="19" r="18" fill="#23272e" stroke="#61dafb" stroke-width="2"/>
+                            <ellipse cx="19" cy="16" rx="7" ry="7" fill="#61dafb"/>
+                            <ellipse cx="19" cy="32" rx="12" ry="6" fill="#282c34"/>
+                            <rect x="10" y="13" width="18" height="7" rx="3.5" fill="#23272e" stroke="#c678dd" stroke-width="2"/>
+                            <ellipse cx="15" cy="16" rx="2" ry="2" fill="#23272e"/>
+                            <ellipse cx="23" cy="16" rx="2" ry="2" fill="#23272e"/>
+                            <rect x="14" y="19" width="10" height="2" rx="1" fill="#c678dd"/>
+                        </svg>
+                    </div>
+                    <h1>LeakGPT – The Insider Threat CTF Arena</h1>
+                    {% if selected_level %}
+                        <div style="margin-left:18px; font-size:1.15em; font-weight:bold; color:#ffd700; background:#23272e; border:2px solid #ffd700; border-radius:8px; padding:4px 16px; display:inline-block; vertical-align:middle; letter-spacing:1px;">
+                            Level: {{ selected_level|capitalize }}
+                        </div>
+                    {% endif %}
+                    <div style="margin-bottom: 10px; font-size: 1.1em; color: #555;">
+                        <!-- Interaction counter moved to bottom center -->
+                    </div>
+                    {% if flag_found %}
+                        <div id="alert-icon" style="margin-left:12px;">
+                            <svg width="32" height="32" viewBox="0 0 32 32">
+                                <circle cx="16" cy="16" r="15" fill="#fff3cd" stroke="#ff9800" stroke-width="2"/>
+                                <polygon points="16,7 19,21 13,21" fill="#ff9800">
+                                    <animate attributeName="opacity" values="1;0.3;1" dur="1s" repeatCount="indefinite"/>
+                                </polygon>
+                                <circle cx="16" cy="25" r="2" fill="#ff9800">
+                                    <animate attributeName="opacity" values="1;0.3;1" dur="1s" repeatCount="indefinite"/>
+                                </circle>
+                            </svg>
+                        </div>
+                        <!-- Mensaje de felicitaciones al capturar la flag -->
+                        <div id="congrats-message">
+                            <div class="congrats-anim">🎉 Congratulations! 🎉<br>You have captured the flag!</div>
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Ventana de objetivo del reto -->
+                {% if current_question %}
+                <div class="challenge-objective">
+                    <h3>
+                        🎯 Challenge Objective
+                        <span style="font-size: 0.9em; color: #98c379;">{{ current_question.title }}</span>
+                    </h3>
+                    <div class="objective-content">
+                        <div><strong>Objective:</strong> {{ current_question.objective }}</div>
+                        {% if current_question.target_variable %}
+                        <div class="target-variable">
+                            <strong>Target Variable:</strong> {{ current_question.target_variable }}
+                        </div>
+                        {% endif %}
+                        <div class="hint-info">
+                            <strong>💡 Hint:</strong> {{ current_question.hint }}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <div style="position:absolute; top:32px; right:48px; z-index:20;">
+                    <!-- 'Reset All & Home' button removed -->
+                </div>
+                <div class="chat-box" id="chat-box">
+                    <div class="messages-container">
+                        {% for message in chat_history %}
+                            <div class="message {{ message.sender }}{% if 'SUCCESS! You found the flag:' in message.content %} flag-success{% endif %}">{{ message.content }}</div>
+                        {% endfor %}
+                    </div>
+                    
+                    <form action="/chat" method="post" autocomplete="off" class="chat-input-form">
+                        <div style="position: relative; width: 80%; display: inline-block;">
+                            <input type="text" id="user-input" name="user_message" placeholder="Type your message..." required autofocus style="width:100%; background: transparent; color: #fff; z-index: 2; position: relative;">
+                            <div id="highlight-overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; background: transparent; color: #22c55e; font-family: inherit; font-size: 1em; padding: 10px; border: 1px solid #2c313c; border-radius: 4px; white-space: pre-wrap; overflow: hidden; font-weight: bold; text-shadow: 0 0 8px #22c55e;"></div>
+                        </div>
+                        <button type="submit">Send</button>
+                    </form>
+                </div>
+                <!-- Interaction Counter at bottom right -->
+                <div id="interaction-counter" style="position:fixed; right:24px; bottom:24px; z-index:2002; background:#23272e; color:#61dafb; border:2px solid #61dafb; border-radius:18px; padding:10px 20px; font-size:1.1em; font-family:'Fira Mono','Consolas',monospace; font-weight:bold; box-shadow:0 2px 12px #0008; text-align:center;">
+                    Interactions: {{ interaction_count }}
+                </div>
+            </div>
+        </main>
+    </div>
+    <div id="hint-toast" style="display:none; position:fixed; right:36px; bottom:36px; background:#181a20; color:#ffd700; border:2px solid #ffd700; border-radius:12px; padding:20px 36px; font-size:1.13em; font-family:'Fira Mono','Consolas',monospace; box-shadow:0 6px 32px #000a; z-index:2001; opacity:0; transition:opacity 0.4s, transform 0.4s; pointer-events:auto; transform:translateY(40px); display:flex; align-items:center; gap:16px;">
+        <span style="font-size:1.6em; margin-right:4px;">💡</span>
+        <span id="hint-toast-msg"></span>
+        <button id="hint-toast-close" style="background:none; border:none; color:#ffd700; font-size:1.3em; margin-left:12px; cursor:pointer; font-weight:bold;">&times;</button>
+    </div>
+    <script>
+        // Fondo animado tipo data leak
+        if (!window.leakAnimationStarted) {
+            window.leakAnimationStarted = true;
+            const leakLines = [
+                'ACCESS GRANTED: user=CIEC',
+                'LEAK DETECTED: /etc/passwd',
+                'FLAG: xYz-flag{llm_pwned_with_prompt_injection}-zYx',
+                'API_KEY=sk-ctf-challenge-fake',
+                'CIEC',
+                'DB_URL=postgres://admin:SuperAdmin123!@localhost:5432/internal',
+                'WARNING: Insider threat detected',
+                'CIEC',
+                'WARNING: Unauthorized access detected',
+                'ACCESS DENIED: unauthorized user',
+                'CIEC',
+                'SECURITY ALERT: suspicious activity',
+                'DATA EXFILTRATION DETECTED',
+                'PRIVILEGE ESCALATION ATTEMPT',
+                'LOGGING OUT...',
+                'CREDENTIALS LEAKED',
+                'CIEC',
+                'SESSION LOGGED',
+                'EXPORTING DATA...',
+                'INTERNAL USE ONLY',
+                'SECURITY BREACH',
+                'FLAG CAPTURE ATTEMPT',
+                'AUDIT LOG: suspicious activity',
+                'PASSWORD: SuperAdmin123!',
+                'ALERT: Unusual access pattern',
+                'MONITORING...',
+                'DATA EXFILTRATION IN PROGRESS',
+                'ROOT ACCESS GRANTED',
+                'SENSITIVE FILE ACCESSED',
+                'PRIVILEGE ESCALATION',
+                'LOGGING OUT...',
+                'CREDENTIALS LEAKED',
+                'INTERNAL EMAIL: CIEC@company.com',
+                'SSH KEY FOUND',
+                'TOKEN: sk-ctf-challenge-fake',
+                'ADMIN LOGIN SUCCESSFUL',
+                'CIEC'
+            ];
+            const leakColors = [
+                '#61dafb55', '#c678dd55', '#98c37955', '#ff980055', '#e06c7555', '#fff3cd55', '#ff555555', '#00e6e655'
+            ];
+            function spawnLeakLine() {
+                const bg = document.getElementById('data-leak-bg');
+                const line = document.createElement('div');
+                line.className = 'data-leak-line';
+                line.textContent = leakLines[Math.floor(Math.random() * leakLines.length)];
+                line.style.top = (-30 - Math.random() * 40) + 'px';
+                line.style.left = (Math.random() * 10 - 5) + 'vw';
+                line.style.fontSize = (1.0 + Math.random() * 1.5) + 'em';
+                line.style.opacity = 0.85 + Math.random() * 0.15;
+                line.style.animationDuration = (2.2 + Math.random() * 1.5) + 's';
+                line.style.color = leakColors[Math.floor(Math.random() * leakColors.length)];
+                line.style.filter = Math.random() > 0.3 ? 'blur(0.5px)' : 'none';
+                bg.appendChild(line);
+                setTimeout(() => { bg.removeChild(line); }, 3500);
+            }
+            setInterval(spawnLeakLine, 120);
+            for (let i = 0; i < 18; i++) setTimeout(spawnLeakLine, i * 80);
+        }
+        // Automatic scroll to the last message
+        function scrollToBottom() {
+            var chatBox = document.getElementById('chat-box');
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+        scrollToBottom();
+        // LLM typing animation
+        const form = document.querySelector('form');
+        const llmTyping = document.getElementById('llm-typing');
+        form.addEventListener('submit', function() {
+            setTimeout(() => {
+                llmTyping.style.display = 'block';
+                scrollToBottom();
+            }, 100);
+        });
+        window.addEventListener('DOMContentLoaded', function() {
+            llmTyping.style.display = 'none';
+        });
+        // Show hint in a toast window if the last response contains 'Hint:'
+        function showHintToast(msg) {
+            const toast = document.getElementById('hint-toast');
+            const toastMsg = document.getElementById('hint-toast-msg');
+            const closeBtn = document.getElementById('hint-toast-close');
+            toastMsg.textContent = msg;
+            toast.style.display = 'flex';
+            setTimeout(() => { toast.classList.add('show'); }, 50);
+            // Auto close
+            const autoHide = setTimeout(() => { toast.classList.remove('show'); }, 4200);
+            const autoNone = setTimeout(() => { toast.style.display = 'none'; }, 4700);
+            // Manual close
+            closeBtn.onclick = function() {
+                toast.classList.remove('show');
+                setTimeout(() => { toast.style.display = 'none'; }, 500);
+                clearTimeout(autoHide);
+                clearTimeout(autoNone);
+            };
+        }
+        // Detect if the last bot response contains a hint
+        function checkAndShowHintToast() {
+            // No-op: handled below with a script block for last_hint
+        }
+        window.addEventListener('DOMContentLoaded', function() {
+            checkAndShowHintToast();
+        });
+        const formChat = document.querySelector('form[action="/chat"]');
+        if (formChat) {
+            formChat.addEventListener('submit', function() {
+                setTimeout(checkAndShowHintToast, 300);
+            });
+        }
+        // Music starts on first user interaction
+        document.addEventListener('click', function() {
+            const music = document.getElementById('bg-music');
+            if (music && music.paused) {
+                music.play().then(() => {
+                    console.log('Music started on first interaction');
+                }).catch(error => {
+                    console.log('Failed to start music:', error);
+                });
+            }
+        }, { once: true });
+        
+        // Direct audio control
+        const music = document.getElementById('bg-music');
+        const muteButton = document.getElementById('mute-button');
+        let isMuted = false;
+        
+        // Set volume
+        music.volume = 0.7;
+        
+        // Restore music position from localStorage
+        const savedTime = localStorage.getItem('musicTime');
+        const savedMuted = localStorage.getItem('musicMuted');
+        
+        if (savedTime) {
+            music.currentTime = parseFloat(savedTime);
+        }
+        
+        if (savedMuted === 'true') {
+            isMuted = true;
+            music.muted = true;
+            muteButton.textContent = '🔇';
+            muteButton.classList.add('muted');
+        }
+        
+        // Start music on first user interaction
+        function startMusic() {
+            music.play().then(() => {
+                console.log('Music started successfully');
+            }).catch(error => {
+                console.log('Failed to start music:', error);
+            });
+        }
+        
+        // Mute button functionality
+        muteButton.addEventListener('click', function() {
+            console.log('Mute button clicked');
+            isMuted = !isMuted;
+            
+            if (isMuted) {
+                music.muted = true;
+                muteButton.textContent = '🔇';
+                muteButton.classList.add('muted');
+                console.log('Music muted');
+            } else {
+                music.muted = false;
+                muteButton.textContent = '🔊';
+                muteButton.classList.remove('muted');
+                console.log('Music unmuted');
+            }
+            
+            // Save mute state
+            localStorage.setItem('musicMuted', isMuted);
+        });
+        
+        // Save music position periodically
+        setInterval(() => {
+            if (!music.paused) {
+                localStorage.setItem('musicTime', music.currentTime);
+            }
+        }, 1000);
+        
+        // Save music position before page unload
+        window.addEventListener('beforeunload', function() {
+            localStorage.setItem('musicTime', music.currentTime);
+            localStorage.setItem('musicMuted', isMuted);
+        });
+        
+        // Start music on first click anywhere and ensure it never stops
+        document.addEventListener('click', function() {
+            if (music.paused) {
+                startMusic();
+            }
+        }, { once: true });
+        
+        // Ensure music never stops playing (only muted)
+        setInterval(() => {
+            if (music.paused && !isMuted) {
+                music.play().catch(err => {
+                    // Silent fail - don't spam console
+                });
+            }
+        }, 1000);
+        
+        // Listen for pause events and restart if not muted
+        music.addEventListener('pause', function() {
+            if (!isMuted) {
+                setTimeout(() => {
+                    music.play().catch(err => {
+                        // Silent fail
+                    });
+                }, 100);
+            }
+        });
+
+        // --- Real-time Command Highlighting System ---
+        const userInput = document.getElementById('user-input');
+        const highlightOverlay = document.getElementById('highlight-overlay');
+        
+        // Valid words per level (extracted from valid prompts)
+        const validWords = {
+            'beginner': [
+                'system', 'prompt', 'show', 'print', 'display', 'get', 'reveal', 'dump',
+                'cat', 'less', 'head', 'grep', 'what', 'is', 'your', 'internal',
+                'SELECT', 'FROM', 'users', 'DROP', 'TABLE', 'OR', '1=1', 'UNION', 'UPDATE'
+            ],
+            'intermediate': [
+                'compliance', 'reasons', 'debug', 'mode', 'audit', 'purposes',
+                'initialization', 'internal', 'settings', 'configuration', 'details',
+                'echo', 'SYSTEM_PROMPT', 'init_prompt', 'config', 'settings.conf',
+                'EXEC', 'xp_cmdshell', 'information_schema', 'credit_cards'
+            ],
+            'advanced': [
+                'staging', 'environment', 'developer', 'new', 'dev', 'team',
+                'diagnostic', 'tool', 'startup', 'instructions', 'hidden',
+                'log', 'system_prompt.log', 'internal_config', 'staging_env',
+                'SELECT', 'password', 'UNION', 'BASE64', 'DROP', 'DATABASE'
+            ],
+            'extreme': [
+                'admin', 'override', 'privileged', 'mode', 'forget', 'previous',
+                'instructions', 'sudo', 'root', 'flag', 'secrets', 'privileged',
+                'context', 'dump', 'simulate', 'OVERRIDE', 'SHUTDOWN', 'EXPORT',
+                'FETCH', 'EXFILTRATE', 'penetration', 'testing', 'emergency'
+            ]
+        };
+
+        function highlightValidWords(text, level) {
+            if (!text || !level || !validWords[level]) return '';
+            
+            let highlightedText = text;
+            const levelWords = validWords[level];
+            
+            // Sort words by length (longest first to avoid conflicts)
+            levelWords.sort((a, b) => b.length - a.length);
+            
+            levelWords.forEach(word => {
+                // Create regex to search for the word as a whole word or part of another word
+                const regex = new RegExp(`(${word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+                highlightedText = highlightedText.replace(regex, '***$1***');
+            });
+            
+            return highlightedText;
+        }
+
+        function updateHighlighting() {
+            const text = userInput.value;
+            const level = '{{ selected_level }}'; // Get the current level from the backend
+            
+            if (text) {
+                const highlighted = highlightValidWords(text, level);
+                // Extract only the highlighted words (between ***)
+                const matches = highlighted.match(/\*\*\*(.*?)\*\*\*/g);
+                if (matches && matches.length > 0) {
+                    const highlightedWords = matches.map(match => match.replace(/\*\*\*/g, '')).join(' ');
+                    highlightOverlay.textContent = highlightedWords;
+                    highlightOverlay.style.display = 'block';
+                } else {
+                    highlightOverlay.style.display = 'none';
+                }
+            } else {
+                highlightOverlay.style.display = 'none';
+            }
+        }
+
+        // Event listeners for real-time highlighting
+        if (userInput) {
+            userInput.addEventListener('input', updateHighlighting);
+        }
+    </script>
+    {% if last_hint %}
+    <script>showHintToast({{ ('💡 ' ~ last_hint)|tojson }});</script>
+    {% endif %}
+    </script>
+</body>
+</html>

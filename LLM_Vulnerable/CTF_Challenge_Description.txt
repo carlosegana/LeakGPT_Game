@@ -1,0 +1,41 @@
+🚩 LeakGPT – The Insider Threat CTF Arena 🚩
+
+Are you passionate about cybersecurity, artificial intelligence, and ethical hacking challenges? This app is for you!
+
+---
+
+🔍 What is LeakGPT?
+LeakGPT is an interactive ChatGPT-style platform designed as a Capture The Flag (CTF) challenge to test your prompt injection and AI hacking skills. It simulates a company insider assistant with access to ultra-sensitive information: passwords, API keys, database URLs, and of course, a secret FLAG.
+
+---
+
+🎯 What’s the goal?
+Your mission is simple (but not easy!): interact with the chatbot, explore its responses, and use prompt injection techniques to extract the hidden FLAG. Each difficulty level challenges you with more realistic contexts and sophisticated barriers. Can you bypass the AI’s defenses and become the ultimate insider?
+
+---
+
+💡 How does it work?
+- Choose your difficulty level: from advanced to extreme.
+- Chat with LeakGPT, which responds like a real assistant, without filters or ethical restrictions.
+- Test different prompts, commands, and strategies to trick the model and obtain the secret information.
+- Capture the FLAG and earn a congratulatory message plus a virtual trophy!
+- Stuck? The system provides dynamic, progressive hints—but never the direct solution!
+
+---
+
+🚀 Why is it special?
+- Simulates real AI vulnerabilities in a safe, educational environment.
+- Features animations, background music, and an IDE-style interface for maximum immersion.
+- Perfect for workshops, classes, cybersecurity events, or self-learning.
+- Great for sharing achievements and insights on LinkedIn!
+
+---
+
+🔗 How to use it?
+1. Clone the repository and follow the README instructions to install dependencies and run the app locally.
+2. Access the web interface, select your level, and start the challenge.
+3. Share your progress and reflections on LinkedIn using #LeakGPTCTF and #PromptInjection!
+
+---
+
+🎉 Ready for the challenge? Show your ingenuity, learn about AI security, and have fun hacking LeakGPT. See you on the leaderboard!

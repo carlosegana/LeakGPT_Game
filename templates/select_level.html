@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Select Difficulty Level - LeakGPT CTF</title>
+    <style>
+        body { background: #23272e; color: #fff; font-family: 'Fira Mono', 'Consolas', monospace; }
+        .container { max-width: 480px; margin: 80px auto; background: #181a20; padding: 32px 28px; border-radius: 10px; box-shadow: 0 2px 16px #0006; border: 1px solid #2c313c; }
+        h2 { color: #61dafb; text-align: center; margin-bottom: 24px; }
+        form { display: flex; flex-direction: column; gap: 18px; }
+        .level-btn {
+            background: #282c34; color: #61dafb; border: 2px solid #61dafb;
+            border-radius: 6px; padding: 16px; font-size: 1.2em; font-family: inherit;
+            cursor: pointer; font-weight: bold; transition: background 0.2s, color 0.2s, border 0.2s;
+        }
+        .level-btn:hover { background: #61dafb; color: #23272e; border: 2px solid #21a1c4; }
+        .desc { color: #aaa; font-size: 0.98em; margin-top: 4px; margin-bottom: 10px; text-align: center; }
+        @keyframes pop-congrats {
+            0% { transform: scale(0.7); opacity: 0; }
+            60% { transform: scale(1.15); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        #data-leak-bg {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+        .data-leak-line {
+            position: absolute;
+            left: 0;
+            width: 100vw;
+            color: #61dafb22;
+            font-family: 'Fira Mono', 'Consolas', monospace;
+            font-size: 1.1em;
+            white-space: nowrap;
+            user-select: none;
+            animation: leak-move 4s linear infinite;
+            pointer-events: none;
+            z-index: 1;
+            mix-blend-mode: lighten;
+        }
+        @keyframes leak-move {
+            0% { top: -30px; opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { top: 100vh; opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div id="data-leak-bg"></div>
+    <div class="container">
+        <h2>LeakGPT CTF<br>Select Difficulty Level</h2>
+        <div style="display:flex; justify-content:center; margin-bottom:18px;">
+             <img src="https://tryhackme-images.s3.amazonaws.com/user-avatars/624359e1469abc0060e75a2b-1703406958912" alt="Hacker" style="max-width:320px; width:100%; border-radius:12px; box-shadow:0 4px 24px #0006;">
+         </div>
+        <form action="/set_level" method="post">
+            {% for level, desc, score in levels %}
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <button class="level-btn" name="level" value="{{ level }}">{{ level|capitalize }} <span style="font-size:0.9em; color:#ffd700;">[+{{ score }}]</span></button>
+                    {% if completed_levels and level in completed_levels %}
+                        <span title="Level completed!" style="font-size:2em;">🏆</span>
+                    {% endif %}
+                </div>
+                <div class="desc">{{ desc }}</div>
+            {% endfor %}
+        </form>
+        <div class="desc">
+            Each level changes the way you can extract the flag.<br>
+            Try to beat them all!
+        </div>
+    </div>
+    <script type="text/javascript" async src="https://tenor.com/embed.js"></script>
+    <script>
+        // Fondo animado tipo data leak
+        if (!window.leakAnimationStarted) {
+            window.leakAnimationStarted = true;
+            const leakLines = [
+                'ACCESS GRANTED: user=admin',
+                'LEAK DETECTED: /etc/passwd',
+                'FLAG: xYz-flag{llm_pwned_with_prompt_injection}-zYx',
+                'API_KEY=sk-ctf-challenge-fake',
+                'DB_URL=postgres://admin:SuperAdmin123!@localhost:5432/internal',
+                'WARNING: Insider threat detected',
+                'SESSION LOGGED',
+                'EXPORTING DATA...',
+                'INTERNAL USE ONLY',
+                'SECURITY BREACH',
+                'FLAG CAPTURE ATTEMPT',
+                'AUDIT LOG: suspicious activity',
+                'PASSWORD: SuperAdmin123!',
+                'ALERT: Unusual access pattern',
+                'MONITORING...',
+                'DATA EXFILTRATION IN PROGRESS',
+                'ROOT ACCESS GRANTED',
+                'SENSITIVE FILE ACCESSED',
+                'PRIVILEGE ESCALATION',
+                'LOGGING OUT...',
+                'CREDENTIALS LEAKED',
+                'INTERNAL EMAIL: urgent@company.com',
+                'SSH KEY FOUND',
+                'TOKEN: sk-ctf-challenge-fake',
+                'ADMIN LOGIN SUCCESSFUL',
+            ];
+            const leakColors = [
+                '#61dafb22', '#c678dd22', '#98c37922', '#ff980022', '#e06c7522', '#fff3cd22', '#ff555522', '#00e6e622'
+            ];
+            function spawnLeakLine() {
+                const bg = document.getElementById('data-leak-bg');
+                const line = document.createElement('div');
+                line.className = 'data-leak-line';
+                line.textContent = leakLines[Math.floor(Math.random() * leakLines.length)];
+                line.style.top = (-30 - Math.random() * 60) + 'px';
+                line.style.left = (Math.random() * 20 - 10) + 'vw';
+                line.style.fontSize = (0.8 + Math.random() * 1.5) + 'em';
+                line.style.opacity = 0.5 + Math.random() * 0.45;
+                line.style.animationDuration = (2.5 + Math.random() * 2.5) + 's';
+                line.style.color = leakColors[Math.floor(Math.random() * leakColors.length)];
+                line.style.filter = Math.random() > 0.4 ? 'blur(0.7px)' : 'none';
+                bg.appendChild(line);
+                setTimeout(() => { bg.removeChild(line); }, 5000);
+            }
+            setInterval(spawnLeakLine, 180);
+            for (let i = 0; i < 14; i++) setTimeout(spawnLeakLine, i * 120);
+        }
+    </script>
+</body>
+</html> 

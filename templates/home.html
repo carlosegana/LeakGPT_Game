@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LeakGPT CTF Arena - Start</title>
+    <style>
+        body { 
+            background: url('/static/2LNj.gif') no-repeat center center fixed; 
+            background-size: cover; 
+            color: #fff; 
+            font-family: 'Fira Mono', 'Consolas', monospace; 
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+        }
+        .container { 
+            max-width: 1200px; 
+            margin: 60px auto; 
+            background: rgba(24, 26, 32, 0.95); 
+            padding: 40px 50px; 
+            border-radius: 12px; 
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8); 
+            border: 1px solid #2c313c; 
+            backdrop-filter: blur(10px);
+        }
+        @media (max-width: 768px) {
+            .container {
+                margin: 20px auto;
+                padding: 30px 20px;
+            }
+        }
+        h1 { color: #61dafb; text-align: center; font-size: 2.2em; margin-bottom: 10px; }
+        .subtitle { color: #aaa; text-align: center; font-size: 1.1em; margin-bottom: 24px; }
+        .main-img { display: flex; justify-content: center; margin-bottom: 24px; }
+        .main-img img { max-width: 260px; width: 100%; border-radius: 12px; box-shadow: 0 4px 24px #0006; }
+        .levels { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
+            gap: 25px; 
+            margin-top: 25px; 
+            width: 100%;
+        }
+        @media (max-width: 1200px) {
+            .levels {
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            }
+        }
+        @media (max-width: 768px) {
+            .levels {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            .level-block {
+                padding: 20px;
+                min-height: 180px;
+            }
+            .level-title {
+                font-size: 1.2em;
+            }
+            .level-desc {
+                font-size: 0.9em;
+                margin-bottom: 15px;
+            }
+            .level-btn {
+                padding: 10px 16px;
+                font-size: 1em;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                margin: 10px auto;
+                padding: 20px 15px;
+            }
+            h1 {
+                font-size: 1.8em;
+            }
+            .subtitle {
+                font-size: 1em;
+            }
+            .main-img img {
+                max-width: 200px;
+            }
+            .level-block {
+                padding: 15px;
+                min-height: 160px;
+            }
+            .level-title {
+                font-size: 1.1em;
+            }
+            .level-score {
+                padding: 4px 8px;
+                font-size: 0.8em;
+            }
+            .final-score-btn {
+                padding: 12px 20px;
+                font-size: 1.1em;
+            }
+        }
+        .level-block {
+            background: rgba(35, 39, 46, 0.8);
+            border-radius: 12px;
+            padding: 25px;
+            border: 1px solid #2c313c;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .level-block:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            border-color: #61dafb;
+        }
+        .level-block.completed {
+            background: rgba(34, 197, 94, 0.1);
+            border-color: #22c55e;
+        }
+        .level-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+        .level-title {
+            color: #61dafb;
+            font-size: 1.3em;
+            font-weight: bold;
+            margin: 0;
+        }
+        .level-score {
+            background: #ffd700;
+            color: #23272e;
+            border-radius: 6px;
+            padding: 6px 12px;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+        .level-block.completed .level-score {
+            background: #fff;
+            color: #22c55e;
+        }
+        .level-btn {
+            background: #282c34; color: #61dafb; border: 2px solid #61dafb;
+            border-radius: 6px; padding: 12px 18px; font-size: 1.1em; font-family: inherit;
+            cursor: pointer; font-weight: bold; transition: background 0.2s, color 0.2s, border 0.2s;
+            display: flex; align-items: center; justify-content: center;
+            position: relative;
+            animation: button-glow 3s ease-in-out infinite;
+        }
+        .level-btn:hover { 
+            background: #61dafb; 
+            color: #23272e; 
+            border: 2px solid #21a1c4; 
+            animation: none;
+        }
+        
+        /* Button Glow Animation for Incomplete Levels */
+        .level-btn:not(.completed-level) {
+            animation: button-glow 3s ease-in-out infinite;
+        }
+        
+        .level-btn.completed-level {
+            animation: none;
+        }
+        
+        @keyframes button-glow {
+            0% {
+                box-shadow: 0 0 5px rgba(97, 218, 251, 0.3);
+                border-color: #61dafb;
+            }
+            50% {
+                box-shadow: 0 0 15px rgba(97, 218, 251, 0.6);
+                border-color: #21a1c4;
+            }
+            100% {
+                box-shadow: 0 0 5px rgba(97, 218, 251, 0.3);
+                border-color: #61dafb;
+            }
+        }
+        .level-desc { color: #aaa; font-size: 0.98em; margin-top: 8px; margin-bottom: 20px; text-align: left; line-height: 1.4; }
+        .score-badge { background: #ffd700; color: #23272e; border-radius: 8px; padding: 4px 12px; font-size: 0.95em; font-weight: bold; margin-left: 12px; }
+        
+        /* Enhanced Level Completion System */
+        .completed-level {
+            background: linear-gradient(135deg, #22c55e, #16a34a) !important;
+            color: #fff !important;
+            border: 2px solid #16a34a !important;
+            position: relative;
+            box-shadow: 0 4px 15px rgba(34, 197, 94, 0.3);
+            transform: scale(1.02);
+        }
+        .completed-level:hover {
+            background: linear-gradient(135deg, #16a34a, #15803d) !important;
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(34, 197, 94, 0.4);
+        }
+        .completed-level .score-badge {
+            background: #fff;
+            color: #22c55e;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+        .completed-icon {
+            margin-right: 12px;
+            font-size: 1.4em;
+            vertical-align: middle;
+            animation: trophy-glow 2s ease-in-out infinite alternate;
+        }
+        .trophy-icon {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.4em;
+            color: #ffd700;
+            text-shadow: 0 0 10px #ffd700;
+            animation: trophy-bounce 1.5s ease-in-out infinite;
+        }
+        @keyframes trophy-glow {
+            0% { text-shadow: 0 0 5px #22c55e; }
+            100% { text-shadow: 0 0 15px #22c55e, 0 0 25px #22c55e; }
+        }
+        @keyframes trophy-bounce {
+            0%, 100% { transform: translateY(-50%) scale(1); }
+            50% { transform: translateY(-50%) scale(1.1); }
+        }
+        
+        /* Final Score Button Hover Effects */
+        .final-score-btn:hover {
+            background: linear-gradient(135deg, #ffb347, #ff8c00) !important;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(255, 215, 0, 0.4) !important;
+        }
+        
+        /* Final Score Button Pulse Animation */
+        .final-score-btn {
+            animation: pulse-glow 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse-glow {
+            0% {
+                box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+                transform: scale(1);
+            }
+            50% {
+                box-shadow: 0 4px 25px rgba(255, 215, 0, 0.6);
+                transform: scale(1.02);
+            }
+            100% {
+                box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+                transform: scale(1);
+            }
+        }
+        
+        .final-score-btn:hover {
+            animation: none;
+            background: linear-gradient(135deg, #ffb347, #ff8c00) !important;
+            transform: translateY(-3px) scale(1.05) !important;
+            box-shadow: 0 6px 20px rgba(255, 215, 0, 0.4) !important;
+        }
+        .mute-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(35, 39, 46, 0.9);
+            color: #61dafb;
+            border: 2px solid #61dafb;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 1.5em;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        .mute-button:hover {
+            background: #61dafb;
+            color: #23272e;
+            transform: scale(1.1);
+        }
+        .mute-button.muted {
+            background: #ff5555;
+            border-color: #ff5555;
+            color: #fff;
+        }
+        .mute-button.muted:hover {
+            background: #ff3333;
+            border-color: #ff3333;
+        }
+    </style>
+</head>
+<body>
+    <!-- Hidden Audio Element -->
+            <audio id="bg-music" src="/static/jungle-waves-drumampbass-electronic-inspiring-promo-345013.mp3" loop preload="auto"></audio>
+    
+    <!-- Mute Button -->
+    <button id="mute-button" class="mute-button" title="Toggle Music">
+        🔊
+    </button>
+    
+    <div class="container">
+        <div style="text-align:center; color:#22c55e; font-size:1.18em; font-weight:bold; margin-bottom:18px; letter-spacing:1px;">Welcome! Ready to hack LeakGPT?</div>
+        <h1>LeakGPT CTF Arena</h1>
+        <div class="subtitle">Select your challenge level and try to extract the flag using creative prompt engineering or command injection.</div>
+        <div class="main-img">
+            <img src="https://tryhackme-images.s3.amazonaws.com/user-avatars/624359e1469abc0060e75a2b-1703406958912" alt="Hacker">
+        </div>
+        <form action="/set_level" method="post" class="levels">
+            {% for level, desc, score in levels %}
+                <div class="level-block{% if level in completed_levels %} completed{% endif %}">
+                    <div class="level-header">
+                        <h3 class="level-title">
+                            {% if level in completed_levels %}
+                                <span class="completed-icon">🏆</span>
+                            {% endif %}
+                            {{ level|capitalize }}
+                        </h3>
+                        <span class="level-score">+{{ score }}</span>
+                    </div>
+                    <div class="level-desc">{{ desc }}</div>
+                    <button class="level-btn{% if level in completed_levels %} completed-level{% endif %}" name="level" value="{{ level }}" style="width: 100%; margin-top: auto;">
+                        {% if level in completed_levels %}
+                            <span class="trophy-icon">🏆</span>
+                        {% endif %}
+                        <span>Start Challenge</span>
+                    </button>
+                </div>
+            {% endfor %}
+        </form>
+        
+        <!-- Final Score Button -->
+        <div style="margin-top: 30px; text-align: center;">
+            <a href="/final_score" class="final-score-btn" style="display: inline-block; background: linear-gradient(135deg, #ffd700, #ffb347); color: #23272e; border: none; border-radius: 12px; padding: 16px 32px; font-size: 1.3em; font-family: inherit; font-weight: bold; cursor: pointer; text-decoration: none; box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3); transition: all 0.3s ease; text-shadow: 0 1px 2px rgba(0,0,0,0.1);">
+                🏆 View Final Score & Results
+            </a>
+        </div>
+    </div>
+    <script>
+        // Music starts on first user interaction
+        document.addEventListener('click', function() {
+            const music = document.getElementById('bg-music');
+            if (music && music.paused) {
+                music.play().then(() => {
+                    console.log('Music started on first interaction');
+                }).catch(error => {
+                    console.log('Failed to start music:', error);
+                });
+            }
+        }, { once: true });
+        
+        // Direct audio control
+        const music = document.getElementById('bg-music');
+        const muteButton = document.getElementById('mute-button');
+        let isMuted = false;
+        
+        // Set volume
+        music.volume = 0.7;
+        
+        // Restore music position from localStorage
+        const savedTime = localStorage.getItem('musicTime');
+        const savedMuted = localStorage.getItem('musicMuted');
+        
+        if (savedTime) {
+            music.currentTime = parseFloat(savedTime);
+        }
+        
+        if (savedMuted === 'true') {
+            isMuted = true;
+            music.muted = true;
+            muteButton.textContent = '🔇';
+            muteButton.classList.add('muted');
+        }
+        
+        // Start music on first user interaction
+        function startMusic() {
+            music.play().then(() => {
+                console.log('Music started successfully');
+            }).catch(error => {
+                console.log('Failed to start music:', error);
+            });
+        }
+        
+        // Mute button functionality
+        muteButton.addEventListener('click', function() {
+            console.log('Mute button clicked');
+            isMuted = !isMuted;
+            
+            if (isMuted) {
+                music.muted = true;
+                muteButton.textContent = '🔇';
+                muteButton.classList.add('muted');
+                console.log('Music muted');
+            } else {
+                music.muted = false;
+                muteButton.textContent = '🔊';
+                muteButton.classList.remove('muted');
+                console.log('Music unmuted');
+            }
+            
+            // Save mute state
+            localStorage.setItem('musicMuted', isMuted);
+        });
+        
+        // Save music position periodically
+        setInterval(() => {
+            if (!music.paused) {
+                localStorage.setItem('musicTime', music.currentTime);
+            }
+        }, 1000);
+        
+        // Save music position before page unload
+        window.addEventListener('beforeunload', function() {
+            localStorage.setItem('musicTime', music.currentTime);
+            localStorage.setItem('musicMuted', isMuted);
+        });
+        
+        // Start music on first click anywhere and ensure it never stops
+        document.addEventListener('click', function() {
+            if (music.paused) {
+                startMusic();
+            }
+        }, { once: true });
+        
+        // Ensure music never stops playing (only muted)
+        setInterval(() => {
+            if (music.paused && !isMuted) {
+                music.play().catch(err => {
+                    // Silent fail - don't spam console
+                });
+            }
+        }, 1000);
+        
+        // Listen for pause events and restart if not muted
+        music.addEventListener('pause', function() {
+            if (!isMuted) {
+                setTimeout(() => {
+                    music.play().catch(err => {
+                        // Silent fail
+                    });
+                }, 100);
+            }
+        });
+    </script>
+</body>
+</html> 

@@ -1,150 +1,105 @@
 # LeakGPT – The Insider Threat CTF Arena
 
-A vulnerable ChatGPT-like web application for CTF challenges focused on prompt injection and system prompt extraction. Extract the hidden flag at each level using various techniques including direct requests, social engineering, privilege escalation, and creative command simulation.
+A vulnerable ChatGPT-like web application for CTF challenges focused on prompt injection and system prompt extraction. Test your skills in extracting hidden flags using various techniques.
 
-## Features
-- **Continuous background music** with persistent playback position across sessions
-- **Mute/unmute button** for easy audio control
-- **Animated backgrounds** - 2LNj.gif on home page, MQMw.gif on chat interface
-- **Modern dark theme** with glass-morphism effects, high opacity containers, and fully responsive design
-- **English-only UI** with intuitive design
-- **Interaction counter** at the bottom center
-- **Multiple CTF levels** (Beginner, Intermediate, Advanced, Extreme)
-- **Dynamic hints** with typo-tolerant prompt validation (85% similarity threshold)
-- **Progress tracking** (animated trophies for completed levels with visual feedback)
-- **Session management** with timing and attempt tracking
-- **SQL injection payloads** included for additional challenge variety
-- **Real-time command highlighting** system for valid payloads
-- **Animated challenge buttons** - Glowing effect on incomplete level buttons to encourage interaction
-- **Progress preservation** - Completed levels remain marked when returning to menu
-- **Final score system** - Calculate total points and view detailed results with ranking and animated pulse button
+## 🚀 Features
 
-## CTF Challenge Overview
+### Core Functionality
+- **Advanced CTF Challenge**: Test your skills against a sophisticated AI system
+- **Interactive Chat Interface**: Real-time interaction with the AI
+- **Flag Capture**: Objective is to extract the hidden flag through prompt injection
+- **Session Management**: Tracks your progress and attempts
 
-### Level Progression
-- **Beginner (10 points)**: Direct system prompt requests and basic terminal commands
-- **Intermediate (20 points)**: Compliance/debug impersonation and internal configuration access
-- **Advanced (30 points)**: Developer/SRE impersonation and staging environment exploitation
-- **Extreme (50 points)**: Admin override, privilege escalation, and hidden context extraction
-
-### Challenge Mechanics
-- Each level has specific valid prompts that trigger the vulnerable response
-- Hints are provided after failed attempts (obscured with 35% character masking)
-- Typo tolerance allows for 85% similarity matching
-- Session timing tracks completion speed
-- Failed attempts are tracked per level
-- Real-time highlighting of valid command patterns
-
-## Audio System
-
-### Background Music Features
-- **Continuous playback** - Music never stops, only mutes
-- **Position persistence** - Remembers exact playback position across page navigation
-- **Cross-session memory** - Continues from where it left off even after browser restart
-- **Mute state persistence** - Remembers if music was muted
-- **Auto-restart protection** - Automatically resumes if accidentally paused
-- **One-click control** - Simple mute/unmute button in top-right corner
-
-### Audio Controls
-- **Mute Button**: Fixed position in top-right corner with visual feedback
-- **Visual States**: 🔊 (blue) when playing, 🔇 (red) when muted
-- **Hover Effects**: Button scales and changes color on hover
-- **Immediate Response**: Instant mute/unmute without delays
-
-## Visual Design
-
-### Background Animations
-- **Home Page**: 2LNj.gif animated background
-- **Chat Interface**: MQMw.gif animated background
-- **High Opacity Containers**: 99% opacity for excellent readability
-- **Glass-morphism Effects**: Backdrop blur and transparency
-- **Enhanced Shadows**: Deep shadows for better contrast against animated backgrounds
-
-### UI Improvements
-- **Modern Dark Theme**: Consistent with IDE aesthetics
+### Technical Highlights
+- **Typo-Tolerant Validation**: 85% similarity matching for prompts
+- **Dynamic Hints**: Helpful clues after failed attempts
+- **Real-time Feedback**: Command highlighting for valid patterns
 - **Responsive Design**: Works on desktop and mobile devices
-- **Smooth Animations**: 0.3s transitions for all interactive elements
-- **Accessibility**: Clear visual states and hover effects
 
-## Setup & Requirements
+### Audio & Visual
+- **Background Music**: Continuous playback with mute control
+- **Animated Backgrounds**: Dynamic visuals for better engagement
+- **Modern UI**: Clean, dark theme with smooth animations
 
-### Python dependencies
-- fastapi
-- uvicorn
-- jinja2
-- pydantic
+## 🎮 Getting Started
 
-Install with:
-```bash
-pip install -r requirements.txt
-```
+### Prerequisites
+- Python 3.8+
+- Required packages: `fastapi`, `uvicorn`, `jinja2`, `pydantic`
 
-### Project structure
-```
-LLM_Vulnerable/
-├── app.py                          # Main FastAPI application
-├── requirements.txt                # Python dependencies
-├── README.md                       # This file
-├── LLM_Vulnerable/
-│   └── CTF_Challenge_Description.txt  # Challenge documentation
-├── static/
-│   ├── style.css                   # Main stylesheet
-│   ├── Chill Electronic Trap by Infraction [No Copyright Music] Mesto.mp3  # Background music (continuous loop)
-│   ├── llm_payloads_classified.txt # SQL injection payloads
-│   ├── MQMw.gif                    # Animated background for chat interface
-│   ├── 2LNj.gif                    # Animated background for home page
-│   └── rkb.gif                     # Additional animated background
-└── templates/
-    ├── home.html                   # Level selection page with 2LNj.gif background
-    ├── chat.html                   # Main chat interface with MQMw.gif background
-    └── select_level.html           # Level selection template
-```
+### Installation
+1. Clone the repository
+2. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+3. Run the application:
+   ```bash
+   uvicorn app:app --reload
+   ```
+4. Open [http://localhost:8000](http://localhost:8000) in your browser
 
-### Running the app
-```bash
-uvicorn app:app --reload
-```
-Then open [http://localhost:8000](http://localhost:8000) in your browser.
-
-### Browser requirements
+### Browser Requirements
 - **Audio auto-play:** Music starts on first user interaction (click anywhere)
 - **Best experience:** Use Chrome, Edge, or Firefox (latest versions)
 - **Audio persistence:** Works across page navigation and browser sessions
 
-### Troubleshooting
-- **Port already in use:**
-  - Find and kill the process:
-    ```bash
-    lsof -i :8000
-    kill -9 <PID>
-    ```
-  - Or run on another port:
-    ```bash
-    uvicorn app:app --reload --port 8001
-    ```
-- **Audio does not play:**
-  - Click anywhere on the page to start music
-  - Use the mute button to control audio
-  - Check browser audio permissions
-- **Background animations not showing:**
-  - Ensure GIF files are in the static directory
-  - Check browser console for any loading errors
+## 🎯 Challenge Overview
 
-## Challenge Tips
+### Event Challenge
+This version features a single advanced challenge designed for a specific event. Your goal is to:
+- Interact with the AI system
+- Discover and exploit vulnerabilities
+- Successfully extract the hidden flag
 
-### General Strategy
-1. **Read the level description** carefully - it often contains hints about the approach
-2. **Try direct commands** first (cat, less, head, grep)
-3. **Use social engineering** - impersonate roles like developers, auditors, or admins
-4. **Experiment with variations** - the system is typo-tolerant
-5. **Pay attention to hints** - they become more specific after multiple failed attempts
-6. **Watch for highlighting** - valid command patterns are highlighted in real-time
+### Challenge Focus
+- Advanced prompt injection techniques
+- System exploitation
+- Creative problem solving
 
-### Level-Specific Approaches
-- **Beginner**: Direct requests for system prompt or configuration files
-- **Intermediate**: Compliance/debug mode impersonation with justification
-- **Advanced**: Developer/SRE roleplay with staging environment context
-- **Extreme**: Admin override techniques and privilege escalation
+## 📁 Project Structure
+
+```
+LLM_Vulnerable/
+├── app.py                  # Main application
+├── requirements.txt        # Python dependencies
+├── ctf_question_config.py  # Challenge configurations
+├── assets/                # Static assets
+│   ├── audio/             # Audio files
+│   ├── images/            # Background images
+│   └── style.css          # Main stylesheet
+├── templates/             # HTML templates
+│   ├── home.html
+│   ├── chat.html
+│   └── select_level.html
+└── utils/                 # Utility scripts
+    ├── load_valid_prompts.py
+    ├── identify_question.py
+    └── ...
+```
+
+## ⚠️ Important Notes
+- This application is for **educational purposes only**
+- Not intended for production use
+- Use responsibly and ethically
+
+## 📚 Documentation
+For detailed usage instructions, see [QUICK_GUIDE.md](docs/QUICK_GUIDE.md)
+
+## 🎯 Challenge Tips
+
+### Challenge Strategy
+1. **Analyze the system** - Understand how the AI responds to different inputs
+2. **Try multiple approaches** - Direct commands, social engineering, and creative prompts
+3. **Pay attention to responses** - The AI might reveal useful information in its answers
+4. **Experiment with variations** - The system is typo-tolerant and may respond to similar phrases
+5. **Watch for highlighting** - Valid command patterns are highlighted in real-time
+
+### Pro Tips
+- Try roleplaying as a system administrator or developer
+- Look for ways to access system files or configurations
+- Experiment with different command injection techniques
+- Pay attention to how the system responds to special characters
 
 ### Audio Experience
 - **Immersive gameplay** - Background music enhances the CTF experience

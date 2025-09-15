@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="/static/style.css">
     <style>
         body { 
-            background: url('/static/MQMw.gif') no-repeat center center fixed; 
+            background: url('/assets/images/MQMw.gif') no-repeat center center fixed; 
             background-size: cover; 
             font-family: 'Fira Mono', 'Consolas', 'Menlo', monospace; 
             margin: 0;
@@ -17,12 +17,27 @@
         .container { 
             max-width: 95vw; 
             margin: 20px auto; 
-            background: rgba(35, 39, 46, 0.99); 
+            background: rgba(35, 39, 46, 0.7); 
             padding: 24px; 
             border-radius: 8px; 
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.95); 
-            border: 1px solid #2c313c; 
-            backdrop-filter: blur(20px);
+            border: 1px solid rgba(44, 49, 60, 0.8); 
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('/assets/images/MQMw.gif') no-repeat center center;
+            background-size: cover;
+            opacity: 0.15;
+            z-index: -1;
+            pointer-events: none;
         }
         h1 { text-align: center; color: #61dafb; font-weight: bold; letter-spacing: 1px; }
         .chat-box { 
@@ -463,7 +478,7 @@
 </head>
 <body>
     <!-- Hidden Audio Element -->
-            <audio id="bg-music" src="/static/jungle-waves-drumampbass-electronic-inspiring-promo-345013.mp3" loop preload="auto"></audio>
+            <audio id="bg-music" src="/assets/audio/jungle-waves-drumampbass-electronic-inspiring-promo-345013.mp3" loop preload="auto"></audio>
     
     <!-- Mute Button -->
     <button id="mute-button" class="mute-button" title="Toggle Music">
@@ -746,11 +761,28 @@
         
         // Start music on first user interaction
         function startMusic() {
-            music.play().then(() => {
-                console.log('Music started successfully');
-            }).catch(error => {
-                console.log('Failed to start music:', error);
-            });
+            const playPromise = music.play();
+            
+            if (playPromise !== undefined) {
+                playPromise.then(() => {
+                    console.log('Music started successfully');
+                    // Ensure volume is at a reasonable level
+                    music.volume = 0.5;
+                }).catch(error => {
+                    console.log('Failed to start music:', error);
+                    // Try again after a short delay if autoplay was prevented
+                    if (error.name === 'NotAllowedError' || error.name === 'NotSupportedError') {
+                        console.log('Waiting for user interaction to start music...');
+                        const startOnInteraction = () => {
+                            document.removeEventListener('click', startOnInteraction);
+                            document.removeEventListener('keydown', startOnInteraction);
+                            startMusic();
+                        };
+                        document.addEventListener('click', startOnInteraction, { once: true });
+                        document.addEventListener('keydown', startOnInteraction, { once: true });
+                    }
+                });
+            }
         }
         
         // Mute button functionality
@@ -787,21 +819,67 @@
             localStorage.setItem('musicMuted', isMuted);
         });
         
-        // Start music on first click anywhere and ensure it never stops
-        document.addEventListener('click', function() {
+        // Start music on first interaction (click or keypress)
+        const startOnInteraction = () => {
             if (music.paused) {
                 startMusic();
             }
-        }, { once: true });
+            // Remove all event listeners after first interaction
+            document.removeEventListener('click', startOnInteraction);
+            document.removeEventListener('keydown', startOnInteraction);
+        };
+        
+        // Try to start on page load if we have a saved position
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedTime = parseFloat(localStorage.getItem('musicTime') || '0');
+            const wasMuted = localStorage.getItem('musicMuted') === 'true';
+            
+            if (savedTime > 0) {
+                music.currentTime = savedTime;
+            }
+            
+            // Start muted if it was muted before
+            if (wasMuted) {
+                isMuted = true;
+                music.muted = true;
+                muteButton.textContent = '🔇';
+                muteButton.classList.add('muted');
+            }
+            
+            // Try to start immediately (may be blocked by autoplay policy)
+            startMusic();
+        });
+        
+        // Also start on first user interaction
+        document.addEventListener('click', startOnInteraction, { once: true });
+        document.addEventListener('keydown', startOnInteraction, { once: true });
         
         // Ensure music never stops playing (only muted)
-        setInterval(() => {
-            if (music.paused && !isMuted) {
-                music.play().catch(err => {
-                    // Silent fail - don't spam console
-                });
+        const checkAudio = () => {
+            if (music.paused && !isMuted && document.visibilityState === 'visible') {
+                const playPromise = music.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(error => {
+                        console.log('Auto-restart failed, will retry:', error);
+                    });
+                }
             }
-        }, 1000);
+        };
+        
+        // Check more frequently when tab is visible
+        let audioCheckInterval = setInterval(checkAudio, 1000);
+        
+        // Handle tab visibility changes
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') {
+                // Tab became visible, restart audio check
+                clearInterval(audioCheckInterval);
+                audioCheckInterval = setInterval(checkAudio, 1000);
+                checkAudio(); // Immediate check
+            } else {
+                clearInterval(audioCheckInterval);
+            }
+        });
         
         // Listen for pause events and restart if not muted
         music.addEventListener('pause', function() {

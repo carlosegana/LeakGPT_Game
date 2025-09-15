@@ -6,7 +6,7 @@
     <title>LeakGPT CTF Arena - Start</title>
     <style>
         body { 
-            background: url('/static/2LNj.gif') no-repeat center center fixed; 
+            background: url('/assets/images/2LNj.gif') no-repeat center center fixed; 
             background-size: cover; 
             color: #fff; 
             font-family: 'Fira Mono', 'Consolas', monospace; 
@@ -297,8 +297,8 @@
     </style>
 </head>
 <body>
-    <!-- Hidden Audio Element -->
-            <audio id="bg-music" src="/static/jungle-waves-drumampbass-electronic-inspiring-promo-345013.mp3" loop preload="auto"></audio>
+    <!-- Audio Element with Crossfade Support -->
+    <audio id="bg-music" src="/assets/audio/jungle-waves-drumampbass-electronic-inspiring-promo-345013.mp3" loop preload="auto" style="display:none"></audio>
     
     <!-- Mute Button -->
     <button id="mute-button" class="mute-button" title="Toggle Music">
@@ -355,40 +355,133 @@
             }
         }, { once: true });
         
-        // Direct audio control
+        // Enhanced audio control with background playback support
         const music = document.getElementById('bg-music');
         const muteButton = document.getElementById('mute-button');
         let isMuted = false;
+        let audioContext;
+        let sourceNode;
         
-        // Set volume
+        // Initialize audio context on first interaction
+        function initAudio() {
+            if (audioContext) return;
+            
+            try {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                audioContext = new AudioContext();
+                sourceNode = audioContext.createMediaElementSource(music);
+                sourceNode.connect(audioContext.destination);
+                
+                // Resume audio context if it was suspended
+                if (audioContext.state === 'suspended') {
+                    audioContext.resume();
+                }
+                
+                // Handle page visibility changes
+                document.addEventListener('visibilitychange', handleVisibilityChange);
+                
+                // Prevent audio context from being suspended
+                const resumeOnInteraction = () => {
+                    if (audioContext.state === 'suspended') {
+                        audioContext.resume();
+                    }
+                };
+                
+                document.addEventListener('click', resumeOnInteraction, { once: true });
+                document.addEventListener('keydown', resumeOnInteraction, { once: true });
+                
+                console.log('Audio context initialized');
+            } catch (e) {
+                console.error('Error initializing audio context:', e);
+            }
+        }
+        
+        // Handle page visibility changes
+        function handleVisibilityChange() {
+            if (!document.hidden && !music.paused) {
+                // Ensure audio keeps playing when tab becomes visible
+                music.play().catch(e => console.log('Playback continuation error:', e));
+            }
+        }
+        
+        // Set volume and ensure looping
         music.volume = 0.7;
+        music.loop = true;
         
-        // Restore music position from localStorage
-        const savedTime = localStorage.getItem('musicTime');
+        // Restore music state from sessionStorage (better for tab persistence)
+        const savedTime = sessionStorage.getItem('musicTime');
         const savedMuted = localStorage.getItem('musicMuted');
         
+        // Restore playback position if available
         if (savedTime) {
             music.currentTime = parseFloat(savedTime);
         }
         
+        // Restore mute state
         if (savedMuted === 'true') {
             isMuted = true;
             music.muted = true;
             muteButton.textContent = '🔇';
             muteButton.classList.add('muted');
+        } else {
+            music.muted = false;
         }
         
-        // Start music on first user interaction
+        // Save music state more frequently for better continuity
+        setInterval(() => {
+            if (!isMuted && !music.paused) {
+                sessionStorage.setItem('musicTime', music.currentTime.toString());
+            }
+        }, 300);
+        
+        // Start music function with improved error handling
         function startMusic() {
-            music.play().then(() => {
-                console.log('Music started successfully');
-            }).catch(error => {
-                console.log('Failed to start music:', error);
-            });
+            initAudio();
+            
+            if (music.paused) {
+                const playPromise = music.play();
+                
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        console.log('Music started successfully');
+                        localStorage.setItem('musicMuted', 'false');
+                        isMuted = false;
+                        music.muted = false;
+                        muteButton.textContent = '🔊';
+                        muteButton.classList.remove('muted');
+                    }).catch(error => {
+                        console.log('Playback failed, will retry:', error);
+                        // Set up retry on next user interaction
+                        const startOnInteraction = () => startMusic();
+                        document.addEventListener('click', startOnInteraction, { once: true });
+                        document.addEventListener('keydown', startOnInteraction, { once: true });
+                        document.addEventListener('touchstart', startOnInteraction, { once: true });
+                    });
+                }
+            }
         }
+        
+        // Set up initial interaction listeners
+        const startOnInteraction = () => startMusic();
+        document.addEventListener('click', startOnInteraction, { once: true });
+        document.addEventListener('keydown', startOnInteraction, { once: true });
+        document.addEventListener('touchstart', startOnInteraction, { once: true });
+        
+        // Try to start if page is visible
+        if (document.visibilityState === 'visible') {
+            startMusic();
+        }
+        
+        // Initialize audio on first interaction
+        let audioInitialized = false;
         
         // Mute button functionality
         muteButton.addEventListener('click', function() {
+            if (!audioInitialized) {
+                initAudio();
+                audioInitialized = true;
+            }
+            
             console.log('Mute button clicked');
             isMuted = !isMuted;
             
@@ -396,6 +489,7 @@
                 music.muted = true;
                 muteButton.textContent = '🔇';
                 muteButton.classList.add('muted');
+                localStorage.setItem('musicMuted', 'true');
                 console.log('Music muted');
             } else {
                 music.muted = false;

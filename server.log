@@ -1,0 +1,18 @@
+INFO:     Will watch for changes in these directories: ['/Users/carloseganacastanon/Desktop/BDO/LLM_Vulnerable']
+INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
+INFO:     Started reloader process [59321] using StatReload
+INFO:     Started server process [59397]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+Loaded 366 valid prompts from RESPUESTAS_VALIDAS_CTF.txt
+INFO:     127.0.0.1:60246 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60247 - "GET /favicon.ico HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:60246 - "POST /set_level HTTP/1.1" 303 See Other
+INFO:     127.0.0.1:60246 - "GET /chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60255 - "GET /chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60287 - "HEAD /static/ HTTP/1.1" 404 Not Found
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [59397]
+INFO:     Stopping reloader process [59321]

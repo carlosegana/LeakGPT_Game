@@ -6,7 +6,7 @@
     <title>LeakGPT CTF Arena - Final Score</title>
     <style>
         body { 
-            background: url('/static/2LNj.gif') no-repeat center center fixed; 
+            background: url('/assets/images/2LNj.gif') no-repeat center center fixed; 
             background-size: cover; 
             color: #fff; 
             font-family: 'Fira Mono', 'Consolas', monospace; 
@@ -278,7 +278,7 @@
 </head>
 <body>
     <!-- Hidden Audio Element -->
-    <audio id="bg-music" src="/static/jungle-waves-drumampbass-electronic-inspiring-promo-345013.mp3" loop preload="auto"></audio>
+    <audio id="bg-music" src="/assets/audio/jungle-waves-drumampbass-electronic-inspiring-promo-345013.mp3" loop preload="auto"></audio>
     
     <!-- Mute Button -->
     <button id="mute-button" class="mute-button" title="Toggle Music">
@@ -346,36 +346,56 @@
             }
         }, { once: true });
         
-        // Direct audio control
+        // Enhanced audio control with better loop handling
         const music = document.getElementById('bg-music');
         const muteButton = document.getElementById('mute-button');
         let isMuted = false;
         
-        // Set volume
+        // Set volume and ensure looping
         music.volume = 0.7;
+        music.loop = true;
         
-        // Restore music position from localStorage
+        // Restore music state from localStorage
         const savedTime = localStorage.getItem('musicTime');
         const savedMuted = localStorage.getItem('musicMuted');
         
+        // Restore playback position if available
         if (savedTime) {
-            music.currentTime = parseFloat(savedTime);
+            music.currentTime = Math.min(parseFloat(savedTime), music.duration - 1) || 0;
         }
         
+        // Restore mute state
         if (savedMuted === 'true') {
             isMuted = true;
             music.muted = true;
             muteButton.textContent = '🔇';
             muteButton.classList.add('muted');
+        } else {
+            // Only autoplay if not muted
+            music.muted = false;
         }
+        
+        // Save music state periodically
+        setInterval(() => {
+            if (!isMuted && !music.paused) {
+                localStorage.setItem('musicTime', music.currentTime.toString());
+            }
+        }, 1000);
         
         // Start music on first user interaction
         function startMusic() {
-            music.play().then(() => {
-                console.log('Music started successfully');
-            }).catch(error => {
-                console.log('Failed to start music:', error);
-            });
+            if (music.paused) {
+                music.play().then(() => {
+                    console.log('Music started successfully');
+                    localStorage.setItem('musicMuted', 'false');
+                    isMuted = false;
+                    music.muted = false;
+                    muteButton.textContent = '🔊';
+                    muteButton.classList.remove('muted');
+                }).catch(error => {
+                    console.log('Failed to start music:', error);
+                });
+            }
         }
         
         // Mute button functionality

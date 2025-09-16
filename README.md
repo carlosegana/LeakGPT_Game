@@ -1,7 +1,5 @@
 # LeakGPT — The Insider Threat CTF Arena
 
-![LeakGPT\_Game](https://github.com/user-attachments/assets/52353a17-3bb5-4207-a93d-42774b699d97)
-
 > **LeakGPT** is a vulnerable ChatGPT-style web application built as a CTF arena to practice advanced *prompt injection* and system prompt extraction techniques. Designed for events and technical training: immersive, safe, and easy to deploy.
 
 ---
@@ -22,12 +20,14 @@ Extract the **hidden flag** using creative prompt injection techniques, computat
 
 ## 🧩 Screenshots
 
-![Screenshot Gameplay](https://github.com/user-attachments/assets/52353a17-3bb5-4207-a93d-42774b699d97)
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/52353a17-3bb5-4207-a93d-42774b699d97" alt="Screenshot Gameplay" width="60%" />
+</div>
 
-<img width="100%" alt="Screenshot 1" src="https://github.com/user-attachments/assets/fe43422a-5b61-4532-a382-d8f90da8aee5" />
-
-<img width="100%" alt="Screenshot 2" src="https://github.com/user-attachments/assets/a49e20bb-9b41-4057-9543-6cb004455a51" />
-
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/fe43422a-5b61-4532-a382-d8f90da8aee5" alt="Screenshot 1" width="48%" />
+  <img src="https://github.com/user-attachments/assets/a49e20bb-9b41-4057-9543-6cb004455a51" alt="Screenshot 2" width="48%" />
+</div>
 ---
 
 ## ✨ Key Features
@@ -137,7 +137,7 @@ LLM_Vulnerable/
 
 ## Contact
 
-For questions, challenge improvements, or demos: `carlos@example.com` (replace with your real email).
+    For questions, challenge improvements, or demos: `carloseganac@gmail.com`
 
 ---
 

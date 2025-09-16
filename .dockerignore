@@ -1,3 +1,90 @@
+# Python
 __pycache__/
-*.pyc
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+venv/
+env/
+ENV/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
 .DS_Store
+
+# Testing
+.coverage
+htmlcov/
+.pytest_cache/
+.tox/
+nosetests.xml
+coverage.xml
+*.cover
+
+# Logs
+*.log
+
+# Local development
+.env
+.env.*
+!.env.example
+
+# Project specific
+data/
+*.db
+*.sqlite3
+
+# Docker
+Dockerfile.dev
+docker-compose.override.yml
+.dockerignore
+
+# Git
+.git/
+.gitignore
+
+# Build artifacts
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+
+# Local configuration
+local_settings.py
+
+# Media and static files
+/media/
+/static/
+
+# Node modules (if any)
+node_modules/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db

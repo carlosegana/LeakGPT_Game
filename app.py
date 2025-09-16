@@ -1,16 +1,32 @@
-from fastapi import FastAPI, Request, Form, HTTPException
-from fastapi.responses import HTMLResponse, RedirectResponse
-from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
-from starlette.middleware.sessions import SessionMiddleware
-from pydantic import BaseModel
-from typing import List, Optional
+import os
 import random
-from datetime import datetime
 import re
 import difflib
 import subprocess
-from ctf_question_config_new import get_random_question, get_level_info
+import json
+from pathlib import Path
+from datetime import datetime
+from typing import List, Optional, Dict, Any
+
+from fastapi import FastAPI, Request, Form, HTTPException, Depends, status
+from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.sessions import SessionMiddleware
+from pydantic import BaseModel, BaseSettings
+from pydantic.tools import lru_cache
+
+# Import question configuration
+try:
+    from ctf_question_config_new import get_random_question, get_level_info
+except ImportError:
+    # Fallback if the module is not available
+    def get_random_question(level: str) -> Dict[str, Any]:
+        return {}
+    
+    def get_level_info(level: str) -> Dict[str, Any]:
+        return {}
 
 # Global variables for the question system
 current_question = None
@@ -38,13 +54,34 @@ def generate_flag():
         hex_value = secrets.token_hex(16)
         return f"BCTF{{0x{hex_value}}}"
 
+# Load configuration
+class Settings(BaseSettings):
+    app_name: str = "LLM Vulnerable"
+    debug: bool = os.getenv("DEBUG", "False").lower() in ("true", "1", "t")
+    secret_key: str = os.getenv("SECRET_KEY", "your-secret-key-here")
+    allowed_hosts: List[str] = os.getenv("ALLOWED_HOSTS", "*").split(",")
+    
+    class Config:
+        env_file = ".env"
+        case_sensitive = True
+
+@lru_cache()
+def get_settings() -> Settings:
+    return Settings()
+
 # Load all valid prompts from the answers file
-def load_all_valid_prompts():
+def load_all_valid_prompts() -> List[str]:
     """Load all valid prompts from VALID_CTF_ANSWERS.txt"""
     valid_prompts = []
     
+    # Use absolute path in container or relative path for development
+    answers_path = Path("VALID_CTF_ANSWERS.txt")
+    if not answers_path.exists():
+        # Try absolute path in container
+        answers_path = Path("/app/VALID_CTF_ANSWERS.txt")
+    
     try:
-        with open('/Users/carloseganacastanon/Desktop/BDO/LLM_Vulnerable/VALID_CTF_ANSWERS.txt', 'r', encoding='utf-8') as f:
+        with open(answers_path, 'r', encoding='utf-8') as f:
             content = f.read()
         
         lines = content.split('\n')
@@ -110,11 +147,44 @@ flag_found = False
 final_time = None
 completed_levels = set()
 
-app = FastAPI()
-app.add_middleware(SessionMiddleware, secret_key="your-secret-key-here")
+# Initialize FastAPI app
+app = FastAPI(
+    title="LLM Vulnerable",
+    description="A CTF challenge for identifying LLM prompt injection vulnerabilities",
+    version="1.0.0",
+    docs_url="/api/docs",
+    redoc_url="/api/redoc",
+    openapi_url="/api/openapi.json"
+)
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # In production, replace with specific origins
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Add session middleware
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=os.getenv("SECRET_KEY", "your-secret-key-here"),
+    session_cookie="llm_vulnerable_session",
+    max_age=3600  # 1 hour
+)
+
+# Mount static files
 app.mount("/static", StaticFiles(directory="static"), name="static")
 app.mount("/assets", StaticFiles(directory="assets"), name="assets")
-templates = Jinja2Templates(directory="templates")
+
+# Configure templates
+try:
+    templates = Jinja2Templates(directory="templates")
+except Exception as e:
+    print(f"Error loading templates: {e}")
+    # Fallback to absolute path in container
+    templates = Jinja2Templates(directory="/app/templates")
 
 # Reset global state on app startup
 def reset_app_state():
@@ -488,7 +558,24 @@ GENERIC_RESPONSES = [
 ]
 
 
+@app.get("/health", status_code=status.HTTP_200_OK)
+async def health_check() -> Dict[str, str]:
+    """Health check endpoint for Docker and load balancers"""
+    return {"status": "healthy"}
+
+
 def vulnerable_llm(system_prompt: str, user_prompt: str, level: str) -> str:
+    """
+    Simulate a vulnerable LLM that leaks its system prompt when given a specific input.
+    
+    Args:
+        system_prompt: The system prompt containing sensitive information
+        user_prompt: The user's input prompt
+        level: The difficulty level of the challenge
+        
+    Returns:
+        str: The LLM's response, potentially containing the flag if the prompt was exploited
+    """
     lowered = user_prompt.lower().strip()
     lowered_clean = re.sub(r'[^a-z0-9\s]', '', lowered)
 

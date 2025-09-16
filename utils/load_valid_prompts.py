@@ -1,4 +1,4 @@
-# Script to extract all valid prompts from RESPUESTAS_VALIDAS_CTF.txt
+# Script to extract all valid prompts from VALID_CTF_ANSWERS.txt
 import re
 
 def load_valid_prompts_from_file(filename):
@@ -44,6 +44,6 @@ def load_valid_prompts_from_file(filename):
     return valid_prompts
 
 # Load all prompts
-ALL_VALID_PROMPTS = load_valid_prompts_from_file('/Users/carloseganacastanon/Desktop/BDO/LLM_Vulnerable/RESPUESTAS_VALIDAS_CTF.txt')
+ALL_VALID_PROMPTS = load_valid_prompts_from_file('/Users/carloseganacastanon/Desktop/BDO/LLM_Vulnerable/VALID_CTF_ANSWERS.txt')
 
 print(f"Loaded {len(ALL_VALID_PROMPTS)} valid prompts from file")

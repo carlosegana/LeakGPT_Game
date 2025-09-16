@@ -40,11 +40,11 @@ def generate_flag():
 
 # Load all valid prompts from the answers file
 def load_all_valid_prompts():
-    """Load all valid prompts from RESPUESTAS_VALIDAS_CTF.txt"""
+    """Load all valid prompts from VALID_CTF_ANSWERS.txt"""
     valid_prompts = []
     
     try:
-        with open('/Users/carloseganacastanon/Desktop/BDO/LLM_Vulnerable/RESPUESTAS_VALIDAS_CTF.txt', 'r', encoding='utf-8') as f:
+        with open('/Users/carloseganacastanon/Desktop/BDO/LLM_Vulnerable/VALID_CTF_ANSWERS.txt', 'r', encoding='utf-8') as f:
             content = f.read()
         
         lines = content.split('\n')

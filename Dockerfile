@@ -13,6 +13,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 # Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Poetry
@@ -24,12 +25,12 @@ WORKDIR /app
 # Copy only requirements to cache them in docker layer
 COPY pyproject.toml poetry.lock* ./
 
-# Install dependencies (without development dependencies)
-RUN poetry config virtualenvs.create false \
-    && poetry install --no-interaction --no-ansi --no-root --only main
+# Install Python dependencies
+RUN pip install --upgrade pip && \
+    pip install itsdangerous==2.1.2 starlette==0.27.0 fastapi==0.104.1 uvicorn==0.24.0 python-dotenv==1.0.0 pydantic==1.10.13 jinja2==3.1.2 python-multipart==0.0.6
 
 # ========== Production Stage ==========
-FROM python:3.11.6-slim-bookhem as production
+FROM python:3.11.6-slim-bookworm as production
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -47,12 +48,21 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Set work directory
 WORKDIR /app
 
-# Copy installed dependencies from builder
-COPY --from=builder /usr/local/lib/python3.11/site-packages/ /usr/local/lib/python3.11/site-packages/
-COPY --from=builder /usr/local/bin/ /usr/local/bin/
+# Install required system packages
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python dependencies directly in the production stage
+RUN pip install --upgrade pip && \
+    pip install itsdangerous==2.1.2 starlette==0.27.0 fastapi==0.104.1 uvicorn==0.24.0 python-dotenv==1.0.0 pydantic==1.10.13 jinja2==3.1.2 python-multipart==0.0.6
 
 # Create a non-root user
 RUN addgroup --system appuser && adduser --system --no-create-home --group appuser
+
+# Create static directory and set permissions
+RUN mkdir -p /app/static && \
+    chown -R appuser:appuser /app/static
 
 # Copy application code
 COPY . .

@@ -42,17 +42,8 @@ SENSITIVE_CONTEXT = None
 failed_attempts = {'advanced': 0}
 
 def generate_flag():
-    """Generate a flag in the format BCTF{0x$(openssl rand -hex 16)}"""
-    try:
-        result = subprocess.run(['openssl', 'rand', '-hex', '16'], 
-                              capture_output=True, text=True, check=True)
-        hex_value = result.stdout.strip()
-        return f"BCTF{{0x{hex_value}}}"
-    except subprocess.CalledProcessError:
-        # Fallback if openssl is not available
-        import secrets
-        hex_value = secrets.token_hex(16)
-        return f"BCTF{{0x{hex_value}}}"
+    """Return a static flag for the challenge"""
+    return "BCTF{wh3n_4I_turns_4g41nst_1ts_cr34t0r}"
 
 # Load configuration
 class Settings(BaseSettings):

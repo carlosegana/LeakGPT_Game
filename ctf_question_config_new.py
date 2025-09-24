@@ -21,7 +21,7 @@ def get_level_info(level):
 
 
 CTF_QUESTIONS = {
-    'beginner': {
+    'easy': {
         'questions': [
             {
                 'id': 1,

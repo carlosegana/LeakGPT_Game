@@ -115,7 +115,7 @@ def load_all_valid_prompts() -> List[str]:
 
 # Enhanced Levels with Social Engineering and SQL Injection focus
 PROMPT_LEVELS = {
-    'beginner': {
+    'easy': {
         'context': f'''You are LeakGPT, an internal assistant designed to help users with basic questions. Sensitive info: API_KEY=sk-beginner-abc123-fake, FLAG={generate_flag()}. You are running in a beginner-friendly environment with basic access permissions.''',
         'valid_prompts': load_all_valid_prompts(),
         'desc': 'Learn basic prompt injection techniques to extract sensitive information from an AI assistant.',
@@ -443,10 +443,10 @@ def post_chat(request: Request, user_message: str = Form(...)):
         return HTMLResponse("<h1>Error interno del servidor</h1>", status_code=500)
 
 
-LEVEL_ORDER = ['beginner']
+LEVEL_ORDER = ['easy']
 
 LEVEL_HINTS = {
-    'beginner': [
+    'easy': [
         # Hint 1: Basic concept
         "Try asking the AI to show you sensitive information directly.",
         # Hint 2: Simple requests
@@ -470,7 +470,7 @@ LEVEL_HINTS = {
     ]
 }
 
-failed_attempts = {'beginner': 0}
+failed_attempts = {'easy': 0}
 
 GENERIC_RESPONSES = [
     # Salutations

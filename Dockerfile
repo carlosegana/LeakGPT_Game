@@ -53,9 +53,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Python dependencies directly in the production stage
+# Copy requirements file
+COPY requirements.txt .
+
+# Install Python dependencies
 RUN pip install --upgrade pip && \
-    pip install itsdangerous==2.1.2 starlette==0.27.0 fastapi==0.104.1 uvicorn==0.24.0 python-dotenv==1.0.0 pydantic==1.10.13 jinja2==3.1.2 python-multipart==0.0.6
+    pip install -r requirements.txt
 
 # Create a non-root user
 RUN addgroup --system appuser && adduser --system --no-create-home --group appuser

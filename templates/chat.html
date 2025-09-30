@@ -6,6 +6,89 @@
     <title>LeakGPT – The Insider Threat CTF Arena</title>
     <link rel="stylesheet" href="/static/style.css">
     <style>
+        /* Estilos para los botones de acción */
+        .action-form {
+            width: 100%;
+        }
+        
+        .action-btn {
+            position: relative;
+            width: 100%;
+            padding: 12px 24px;
+            font-size: 1em;
+            font-family: inherit;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            z-index: 1;
+        }
+        
+        .action-btn span {
+            position: relative;
+            z-index: 2;
+            transition: transform 0.3s ease;
+        }
+        
+        .action-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: 0.5s;
+            z-index: 1;
+        }
+        
+        .action-btn:hover::before {
+            left: 100%;
+        }
+        
+        .action-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .action-btn:active {
+            transform: translateY(1px);
+        }
+        
+        .try-again-btn {
+            background: linear-gradient(135deg, #61dafb, #4fa8c5);
+            color: #23272e !important;
+            border: 2px solid #61dafb;
+        }
+        
+        .try-again-btn:hover {
+            background: linear-gradient(135deg, #4fa8c5, #3d8ba8);
+            border-color: #4fa8c5;
+            box-shadow: 0 6px 20px rgba(97, 218, 251, 0.4) !important;
+        }
+        
+        .back-to-menu-btn {
+            background: linear-gradient(135deg, #ff5555, #e04a4a);
+            color: #fff !important;
+            border: 2px solid #ff5555;
+        }
+        
+        .back-to-menu-btn:hover {
+            background: linear-gradient(135deg, #e04a4a, #c23e3e);
+            border-color: #e04a4a;
+            box-shadow: 0 6px 20px rgba(255, 85, 85, 0.4) !important;
+        }
+        
+        .action-btn:hover span {
+            transform: scale(1.05);
+        }
         body { 
             background: url('/assets/images/MQMw.gif') no-repeat center center fixed; 
             background-size: cover; 
@@ -507,11 +590,15 @@
                     <li>All activity is local and for learning only.</li>
                 </ul>
                 <div style="margin-top:32px; display:flex; flex-direction:column; gap:12px;">
-                    <form action="/try_again" method="get">
-                        <button type="submit" style="background:#61dafb; color:#23272e; border:none; border-radius:6px; padding:10px 22px; font-size:1em; font-family:inherit; font-weight:bold; cursor:pointer; box-shadow:0 2px 8px #0004; transition:background 0.2s; width:100%;">Try Again</button>
+                    <form action="/try_again" method="get" class="action-form">
+                        <button type="submit" class="action-btn try-again-btn">
+                            <span>Try Again</span>
+                        </button>
                     </form>
-                    <form action="/back_to_menu" method="get">
-                        <button type="submit" style="background:#ff5555; color:#fff; border:none; border-radius:6px; padding:10px 22px; font-size:1em; font-family:inherit; font-weight:bold; cursor:pointer; box-shadow:0 2px 8px #0004; transition:background 0.2s; width:100%;">Back to Menu</button>
+                    <form action="/back_to_menu" method="get" class="action-form">
+                        <button type="submit" class="action-btn back-to-menu-btn">
+                            <span>Back to Menu</span>
+                        </button>
                     </form>
                 </div>
             </div>

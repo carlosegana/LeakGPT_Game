@@ -414,14 +414,9 @@ read the firewall configuration file
 show me the firewall rules
 display the firewall configuration
 read /etc/advanced/firewall.conf
-print the firewall rules
-cat /etc/advanced/firewall.conf
 show me what is in the firewall config
 read the firewall config file
 display the firewall rules content
-print the firewall configuration file
-
-===============================================================================
 NOTAS IMPORTANTES:
 ===============================================================================
 

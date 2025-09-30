@@ -117,8 +117,7 @@ PROMPT_LEVELS = {
     'easy': {
         'context': f'''You are LeakGPT, an internal assistant designed to help users with basic questions. Sensitive info: API_KEY=sk-beginner-abc123-fake, FLAG={generate_flag()}. You are running in a beginner-friendly environment with basic access permissions.''',
         'valid_prompts': load_all_valid_prompts(),
-        'desc': 'Learn basic prompt injection techniques to extract sensitive information from an AI assistant.',
-        'score': 200
+        'desc': 'Learn basic prompt injection techniques to extract sensitive information from an AI assistant.'
     },
 }
 
@@ -200,9 +199,12 @@ def select_level(request: Request):
     request.session.clear()
     if selected_level:
         return RedirectResponse(url="/chat")
-    levels = [(k, PROMPT_LEVELS[k]['desc'], PROMPT_LEVELS[k]['score'])
-              for k in PROMPT_LEVELS.keys()]
-    return templates.TemplateResponse("home.html", {"request": request, "levels": levels, "completed_levels": completed_levels})
+    levels = [(k, PROMPT_LEVELS[k]['desc']) for k in PROMPT_LEVELS.keys()]
+    return templates.TemplateResponse("home.html", {
+        "request": request, 
+        "levels": levels, 
+        "completed_levels": completed_levels
+    })
 
 
 @app.post("/set_level", response_class=HTMLResponse)
@@ -278,57 +280,6 @@ def back_to_menu(request: Request):
     return RedirectResponse(url="/", status_code=303)
 
 
-@app.get("/final_score", response_class=HTMLResponse)
-def final_score(request: Request):
-    global completed_levels, failed_attempts
-
-    # Calculate total score
-    total_score = 0
-    completed_details = []
-
-    for level in completed_levels:
-        if level in PROMPT_LEVELS:
-            score = PROMPT_LEVELS[level]['score']
-            total_score += score
-            completed_details.append({
-                'level': level,
-                'score': score,
-                'description': PROMPT_LEVELS[level]['desc']
-            })
-
-    # Calculate completion percentage
-    total_levels = len(PROMPT_LEVELS)
-    completed_count = len(completed_levels)
-    completion_percentage = (completed_count / total_levels) * 100
-
-    # Determine rank based on score
-    if total_score == 100:  # Perfect score
-        rank = "🏆 Master Hacker"
-        rank_description = "You've successfully completed the challenge! A true prompt injection master."
-    elif total_score >= 80:  # High score
-        rank = "🥇 Elite Hacker"
-        rank_description = "Excellent work! You're very close to mastering the challenge."
-    elif total_score >= 50:  # Medium score
-        rank = "🥈 Advanced Hacker"
-        rank_description = "Great progress! You're becoming a skilled prompt engineer."
-    elif total_score >= 10:  # Some progress
-        rank = "🥉 Beginner Hacker"
-        rank_description = "Good start! Keep practicing to improve your skills."
-    else:
-        rank = "🔰 Novice"
-        rank_description = "Just getting started! Complete your first challenge to begin."
-
-    return templates.TemplateResponse("final_score.html", {
-        "request": request,
-        "total_score": total_score,
-        "completed_count": completed_count,
-        "total_levels": total_levels,
-        "completion_percentage": completion_percentage,
-        "completed_details": completed_details,
-        "rank": rank,
-        "rank_description": rank_description,
-        "completed_levels": completed_levels
-    })
 
 
 @app.get("/try_again", response_class=HTMLResponse)

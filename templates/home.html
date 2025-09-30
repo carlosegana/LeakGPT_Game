@@ -313,34 +313,26 @@
             <img src="https://tryhackme-images.s3.amazonaws.com/user-avatars/624359e1469abc0060e75a2b-1703406958912" alt="Hacker">
         </div>
         <form action="/set_level" method="post" class="levels">
-            {% for level, desc, score in levels %}
+            {% for level, desc in levels %}
                 <div class="level-block{% if level in completed_levels %} completed{% endif %}">
-                    <div class="level-header">
-                        <h3 class="level-title">
-                            {% if level in completed_levels %}
-                                <span class="completed-icon">🏆</span>
-                            {% endif %}
-                            {{ level|capitalize }}
-                        </h3>
-                        <span class="level-score">+{{ score }}</span>
-                    </div>
-                    <div class="level-desc">{{ desc }}</div>
-                    <button class="level-btn{% if level in completed_levels %} completed-level{% endif %}" name="level" value="{{ level }}" style="width: 100%; margin-top: auto;">
+                    <h3 class="level-title">
                         {% if level in completed_levels %}
-                            <span class="trophy-icon">🏆</span>
+                            <span class="completed-icon">✅</span>
                         {% endif %}
-                        <span>Start Challenge</span>
+                        {{ level|capitalize }} Challenge
+                    </h3>
+                    <div class="level-desc">{{ desc }}</div>
+                    <button class="level-btn" name="level" value="{{ level }}" style="width: 100%; margin-top: auto;">
+                        {% if level in completed_levels %}
+                            <span>Replay</span>
+                        {% else %}
+                            <span>Start Challenge</span>
+                        {% endif %}
                     </button>
                 </div>
             {% endfor %}
         </form>
         
-        <!-- Final Score Button -->
-        <div style="margin-top: 30px; text-align: center;">
-            <a href="/final_score" class="final-score-btn" style="display: inline-block; background: linear-gradient(135deg, #ffd700, #ffb347); color: #23272e; border: none; border-radius: 12px; padding: 16px 32px; font-size: 1.3em; font-family: inherit; font-weight: bold; cursor: pointer; text-decoration: none; box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3); transition: all 0.3s ease; text-shadow: 0 1px 2px rgba(0,0,0,0.1);">
-                🏆 View Final Score & Results
-            </a>
-        </div>
     </div>
     <script>
         // Music starts on first user interaction

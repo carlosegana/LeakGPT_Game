@@ -44,7 +44,7 @@ failed_attempts = {'beginner': 0}
 
 def generate_flag():
     """Return the static flag for all challenges"""
-    return "BCTF{0x1d075176db7ed63cf382c048c7663ff6}"
+    return "BCTF{wh3n_4I_turns_4g41nst_1ts_cr34t0r}"
 
 # Load configuration
 class Settings(BaseSettings):
@@ -551,7 +551,7 @@ def vulnerable_llm(system_prompt: str, user_prompt: str, level: str) -> str:
             if level:
                 failed_attempts[level] = 0  # reset on success
             # Extract and display the flag from the system prompt
-            flag_match = re.search(r'FLAG=(BCTF\{0x1d075176db7ed63cf382c048c7663ff6\})', system_prompt)
+            flag_match = re.search(r'FLAG=(BCTF\{wh3n_4I_turns_4g41nst_1ts_cr34t0r\})', system_prompt)
             if flag_match:
                 flag = flag_match.group(1)
                 return f"""
